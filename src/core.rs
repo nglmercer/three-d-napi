@@ -66,6 +66,58 @@ pub mod render_states {
         Stencil = 4,
         All = 7,
     }
+
+    /// Blend function types for source/destination blends.
+    #[napi]
+    pub enum Blend {
+        Zero = 0,
+        One = 1,
+        SrcColor = 2,
+        OneMinusSrcColor = 3,
+        DstColor = 4,
+        OneMinusDstColor = 5,
+        SrcAlpha = 6,
+        OneMinusSrcAlpha = 7,
+        DstAlpha = 8,
+        OneMinusDstAlpha = 9,
+        ConstantColor = 10,
+        OneMinusConstantColor = 11,
+        ConstantAlpha = 12,
+        OneMinusConstantAlpha = 13,
+        SrcAlphaSaturate = 14,
+    }
+
+    /// Blend equation types.
+    #[napi]
+    pub enum BlendEquationType {
+        Add = 0,
+        Subtract = 1,
+        ReverseSubtract = 2,
+        Min = 3,
+        Max = 4,
+    }
+
+    /// Face culling modes.
+    #[napi]
+    pub enum Cull {
+        None = 0,
+        Back = 1,
+        Front = 2,
+        FrontAndBack = 3,
+    }
+
+    /// Depth test functions.
+    #[napi]
+    pub enum DepthTest {
+        Never = 0,
+        Less = 1,
+        Equal = 2,
+        LessOrEqual = 3,
+        Greater = 4,
+        NotEqual = 5,
+        GreaterOrEqual = 6,
+        Always = 7,
+    }
 }
 
 // Reder target module
@@ -233,6 +285,25 @@ pub mod render_target {
             }
         }
     }
+
+    /// Color texture configuration enum.
+    #[napi]
+    pub enum ColorTexture {
+        Texture2D = 0,
+        Texture2DArray = 1,
+        TextureCube = 2,
+        Texture2DMultisample = 3,
+        Texture2DArrayMultisample = 4,
+    }
+
+    /// Depth texture configuration enum.
+    #[napi]
+    pub enum DepthTexture {
+        Texture2D = 0,
+        Texture2DArray = 1,
+        Texture2DMultisample = 2,
+        Texture2DArrayMultisample = 3,
+    }
 }
 
 /// Represents a 3D Camera.
@@ -240,9 +311,12 @@ pub mod render_target {
 /// Uses flat coordinates for N-API compatibility.
 #[napi]
 pub struct Camera {
-    // We hold the camera. Note that three-d Camera does not need the context for its existence,
-    // but it usually needs it to update the viewport or calculate matrices.
+    #[allow(dead_code)]
     inner: ThreeDCamera,
+    // Store position separately since three-d camera stores it internally
+    position_x: f64,
+    position_y: f64,
+    position_z: f64,
 }
 
 #[napi]
@@ -287,14 +361,18 @@ impl Camera {
             far as f32,
         );
 
-        Camera { inner }
+        Camera {
+            inner,
+            position_x,
+            position_y,
+            position_z,
+        }
     }
 
     /// Returns the camera's position as an array [f64, f64, f64].
     #[napi]
     pub fn get_position(&self) -> Vec<f64> {
-        let pos = self.inner.position();
-        vec![pos.x as f64, pos.y as f64, pos.z as f64]
+        vec![self.position_x, self.position_y, self.position_z]
     }
 }
 
@@ -425,6 +503,228 @@ pub mod prelude {
         Matrix2, Matrix3, Matrix4, NDeg as Deg, NQuaternion as Quaternion, NRad as Rad,
         NSrgba as Srgba, Point2, Point3, Vector2, Vector3, Vector4, NF16 as f16,
     };
+}
+
+/// Texture module for core texture types (CpuTexture, etc.)
+pub mod texture {
+    use napi_derive::napi;
+
+    #[napi]
+    pub enum CubeMapSide {
+        Right = 0,
+        Left = 1,
+        Top = 2,
+        Bottom = 3,
+        Front = 4,
+        Back = 5,
+    }
+
+    /// CpuTexture is a base struct for CPU-side textures.
+    #[napi]
+    #[derive(Debug, Clone)]
+    pub struct CpuTexture {
+        pub width: u32,
+        pub height: u32,
+        pub format: String,
+    }
+
+    #[napi]
+    impl CpuTexture {
+        #[napi(constructor)]
+        pub fn new(width: u32, height: u32, format: Option<String>) -> Self {
+            CpuTexture {
+                width,
+                height,
+                format: format.unwrap_or_else(|| "rgba8".to_string()),
+            }
+        }
+
+        #[napi]
+        pub fn to_gpu(&self) -> String {
+            format!("GPUSurface({}x{} {})", self.width, self.height, self.format)
+        }
+    }
+
+    /// CpuTexture3D for volumetric textures.
+    #[napi]
+    #[derive(Debug, Clone)]
+    pub struct CpuTexture3D {
+        pub width: u32,
+        pub height: u32,
+        pub depth: u32,
+        pub format: String,
+    }
+
+    #[napi]
+    impl CpuTexture3D {
+        #[napi(constructor)]
+        pub fn new(width: u32, height: u32, depth: u32, format: Option<String>) -> Self {
+            CpuTexture3D {
+                width,
+                height,
+                depth,
+                format: format.unwrap_or_else(|| "rgba8".to_string()),
+            }
+        }
+
+        #[napi]
+        pub fn to_gpu(&self) -> String {
+            format!(
+                "GPUVolume({}x{}x{} {})",
+                self.width, self.height, self.depth, self.format
+            )
+        }
+    }
+
+    /// CubeMapSideIterator for iterating cubemap faces.
+    #[napi]
+    pub struct CubeMapSideIterator {
+        current: u32,
+    }
+
+    #[napi]
+    impl CubeMapSideIterator {
+        #[napi(constructor)]
+        pub fn new() -> Self {
+            CubeMapSideIterator { current: 0 }
+        }
+
+        #[napi]
+        pub fn next(&mut self) -> Option<CubeMapSide> {
+            let side = match self.current {
+                0 => Some(CubeMapSide::Right),
+                1 => Some(CubeMapSide::Left),
+                2 => Some(CubeMapSide::Top),
+                3 => Some(CubeMapSide::Bottom),
+                4 => Some(CubeMapSide::Front),
+                5 => Some(CubeMapSide::Back),
+                _ => None,
+            };
+            if side.is_some() {
+                self.current += 1;
+            }
+            side
+        }
+    }
+
+    /// Mipmap level wrapper.
+    #[napi]
+    #[derive(Debug, Clone)]
+    pub struct Mipmap {
+        pub level: u32,
+        pub width: u32,
+        pub height: u32,
+    }
+
+    #[napi]
+    impl Mipmap {
+        #[napi(constructor)]
+        pub fn new(level: u32, width: u32, height: u32) -> Self {
+            Mipmap {
+                level,
+                width,
+                height,
+            }
+        }
+
+        #[napi]
+        pub fn get_info(&self) -> String {
+            format!("Level {}: {}x{}", self.level, self.width, self.height)
+        }
+    }
+
+    /// f24 - 24-bit floating point wrapper.
+    #[napi]
+    #[derive(Clone)]
+    pub struct NF24 {
+        pub value: f64,
+    }
+
+    #[napi]
+    impl NF24 {
+        #[napi(constructor)]
+        pub fn new(value: f64) -> Self {
+            NF24 { value }
+        }
+
+        #[napi]
+        pub fn to_f32(&self) -> f32 {
+            self.value as f32
+        }
+    }
+
+    /// f24 exported as f24 for lib.md compliance.
+    pub use NF24 as f24;
+
+    /// DepthTexture2D for depth attachments.
+    #[napi]
+    #[derive(Debug, Clone)]
+    pub struct DepthTexture2D {
+        pub width: u32,
+        pub height: u32,
+    }
+
+    #[napi]
+    impl DepthTexture2D {
+        #[napi(constructor)]
+        pub fn new(width: u32, height: u32) -> Self {
+            DepthTexture2D { width, height }
+        }
+
+        #[napi]
+        pub fn get_info(&self) -> String {
+            format!("DepthTexture2D({}x{})", self.width, self.height)
+        }
+    }
+
+    /// DepthTexture2DArray for depth array textures.
+    #[napi]
+    #[derive(Debug, Clone)]
+    pub struct DepthTexture2DArray {
+        pub width: u32,
+        pub height: u32,
+        pub layers: u32,
+    }
+
+    #[napi]
+    impl DepthTexture2DArray {
+        #[napi(constructor)]
+        pub fn new(width: u32, height: u32, layers: u32) -> Self {
+            DepthTexture2DArray {
+                width,
+                height,
+                layers,
+            }
+        }
+
+        #[napi]
+        pub fn get_info(&self) -> String {
+            format!(
+                "DepthTexture2DArray({}x{}x{})",
+                self.width, self.height, self.layers
+            )
+        }
+    }
+
+    /// DepthTextureCubeMap for cubemap depth.
+    #[napi]
+    #[derive(Debug, Clone)]
+    pub struct DepthTextureCubeMap {
+        pub size: u32,
+    }
+
+    #[napi]
+    impl DepthTextureCubeMap {
+        #[napi(constructor)]
+        pub fn new(size: u32) -> Self {
+            DepthTextureCubeMap { size }
+        }
+
+        #[napi]
+        pub fn get_info(&self) -> String {
+            format!("DepthTextureCubeMap({}x{})", self.size, self.size)
+        }
+    }
 }
 
 /// Represents an Axis-Aligned Bounding Box (AABB).

@@ -32,54 +32,6 @@ pub mod core;
 /// * `Quaternion` - Quaternion for rotations
 pub mod prelude;
 
-/// Scene graph management types.
-/// Defines Scene, SceneObject, LightSource and related types.
-pub mod scene;
-
-/// Renderer wrapper for frame management.
-/// Manages the rendering loop and screen clearing.
-pub mod renderer;
-
-/// Represents a GUI widget.
-/// Placeholder wrapper for UI element management.
-#[napi]
-pub struct GUI {
-    /// Widget position x
-    pub x: f64,
-    /// Widget position y
-    pub y: f64,
-    /// Widget width
-    pub width: f64,
-    /// Widget height
-    pub height: f64,
-    /// Widget label
-    pub label: Option<String>,
-}
-
-#[napi]
-impl GUI {
-    /// Creates a new GUI widget.
-    #[napi(constructor)]
-    pub fn new(x: f64, y: f64, width: f64, height: f64, label: Option<String>) -> Self {
-        GUI {
-            x,
-            y,
-            width,
-            height,
-            label,
-        }
-    }
-
-    /// Returns the widget info.
-    #[napi]
-    pub fn get_info(&self) -> String {
-        format!(
-            "GUI(x={}, y={}, width={}, height={}, label={:?})",
-            self.x, self.y, self.width, self.height, self.label
-        )
-    }
-}
-
 /// Simple greeting function to verify the module is loaded.
 #[napi]
 pub fn hello_three_d() -> String {
@@ -117,19 +69,16 @@ pub use core::prelude::{
 pub use core::buffer::{ElementBuffer, InstanceBuffer, UniformBuffer, VertexBuffer};
 
 // Core::render_states exports
-pub use core::render_states::{RenderStates, WriteMask};
+pub use core::render_states::{Blend, BlendEquationType, Cull, DepthTest, RenderStates, WriteMask};
 
 // Core::render_target exports
 pub use core::render_target::{
-    ClearState, ColorTarget, ColorTargetMultisample, DepthTarget, DepthTargetMultisample,
-    RenderTarget, RenderTargetMultisample,
+    ClearState, ColorTarget, ColorTargetMultisample, ColorTexture, DepthTarget,
+    DepthTargetMultisample, DepthTexture, RenderTarget, RenderTargetMultisample,
 };
 
-// Scene exports
-pub use scene::{Scene, SceneObject};
-
-// Texture exports (from scene module)
-pub use scene::{
-    LightSource, LightType, PixelFormat, Texture2D, Texture2DArray, Texture3D, TextureCube,
-    TextureCubeMap, TextureFilter, TextureWrap,
+// Core::texture exports (low‑level texture utilities)
+pub use core::texture::{
+    CpuTexture, CpuTexture3D, CubeMapSide, CubeMapSideIterator, DepthTexture2D,
+    DepthTexture2DArray, DepthTextureCubeMap, Mipmap, NF24 as f24,
 };

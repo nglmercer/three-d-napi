@@ -195,7 +195,7 @@ impl Texture2D {
     #[napi]
     pub fn get_info(&self) -> String {
         format!(
-            "2DTexture(name={:?}, {}x{}, format={:?})",
+            "Texture2D(name={:?}, {}x{}, format={:?})",
             self.name, self.width, self.height, self.format
         )
     }
@@ -248,7 +248,7 @@ impl Texture2DArray {
     #[napi]
     pub fn get_info(&self) -> String {
         format!(
-            "2DTextureArray(name={:?}, {}x{}x{}, format={:?})",
+            "Texture2DArray(name={:?}, {}x{}x{}, format={:?})",
             self.name, self.width, self.height, self.depth, self.format
         )
     }

@@ -90,6 +90,104 @@ impl Vector2 {
     pub fn new(x: f64, y: f64) -> Self {
         Vector2 { x, y }
     }
+
+    /// Returns the magnitude (length) of this vector.
+    /// Calculate sqrt(x^2 + y^2)
+    #[napi]
+    pub fn length(&self) -> f64 {
+        ((self.x * self.x) + (self.y * self.y)).sqrt()
+    }
+
+    /// Returns a normalized (unit length) version of this vector.
+    /// Returns zero vector if length is zero.
+    #[napi]
+    pub fn normalize(&self) -> Self {
+        let len = self.length();
+        if len == 0.0 {
+            Vector2 { x: 0.0, y: 0.0 }
+        } else {
+            Vector2 {
+                x: self.x / len,
+                y: self.y / len,
+            }
+        }
+    }
+
+    /// Returns the dot product of this vector and another vector.
+    #[napi]
+    pub fn dot(&self, other: &Vector2) -> f64 {
+        self.x * other.x + self.y * other.y
+    }
+
+    /// Returns the perpendicular vector (90 degrees counterclockwise).
+    /// (-y, x)
+    #[napi]
+    pub fn perp(&self) -> Self {
+        Vector2 {
+            x: -self.y,
+            y: self.x,
+        }
+    }
+
+    /// Returns the angle in radians between this vector and the positive X axis.
+    #[napi]
+    pub fn angle(&self) -> f64 {
+        self.y.atan2(self.x)
+    }
+
+    /// Returns the distance to another vector.
+    #[napi]
+    pub fn distance_to(&self, other: &Vector2) -> f64 {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        ((dx * dx) + (dy * dy)).sqrt()
+    }
+
+    /// Linearly interpolates between this vector and another vector by t.
+    /// t=0 returns this vector, t=1 returns the other vector.
+    #[napi]
+    pub fn lerp(&self, other: &Vector2, t: f64) -> Self {
+        Vector2 {
+            x: self.x + (other.x - self.x) * t,
+            y: self.y + (other.y - self.y) * t,
+        }
+    }
+
+    /// Adds another vector to this vector and returns the result.
+    #[napi]
+    pub fn add(&self, other: &Vector2) -> Self {
+        Vector2 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+
+    /// Subtracts another vector from this vector and returns the result.
+    #[napi]
+    pub fn sub(&self, other: &Vector2) -> Self {
+        Vector2 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+
+    /// Multiplies this vector by a scalar and returns the result.
+    #[napi]
+    pub fn mul(&self, scalar: f64) -> Self {
+        Vector2 {
+            x: self.x * scalar,
+            y: self.y * scalar,
+        }
+    }
+
+    /// Divides this vector by a scalar and returns the result.
+    #[napi]
+    pub fn div(&self, scalar: f64) -> Self {
+        Vector2 {
+            x: self.x / scalar,
+            y: self.y / scalar,
+        }
+    }
 }
 
 impl From<&Vector2> for ThreeDVector2<f32> {
@@ -122,6 +220,119 @@ impl Vector3 {
     #[napi(constructor)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3 { x, y, z }
+    }
+
+    /// Returns the magnitude (length) of this vector.
+    /// Calculate sqrt(x^2 + y^2 + z^2)
+    #[napi]
+    pub fn length(&self) -> f64 {
+        ((self.x * self.x) + (self.y * self.y) + (self.z * self.z)).sqrt()
+    }
+
+    /// Returns a normalized (unit length) version of this vector.
+    /// Returns zero vector if length is zero.
+    #[napi]
+    pub fn normalize(&self) -> Self {
+        let len = self.length();
+        if len == 0.0 {
+            Vector3 {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            }
+        } else {
+            Vector3 {
+                x: self.x / len,
+                y: self.y / len,
+                z: self.z / len,
+            }
+        }
+    }
+
+    /// Returns the dot product of this vector and another vector.
+    #[napi]
+    pub fn dot(&self, other: &Vector3) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    /// Returns the cross product of this vector and another vector.
+    #[napi]
+    pub fn cross(&self, other: &Vector3) -> Vector3 {
+        Vector3 {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
+
+    /// Returns the distance to another vector.
+    #[napi]
+    pub fn distance_to(&self, other: &Vector3) -> f64 {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        let dz = self.z - other.z;
+        ((dx * dx) + (dy * dy) + (dz * dz)).sqrt()
+    }
+
+    /// Linearly interpolates between this vector and another vector by t.
+    /// t=0 returns this vector, t=1 returns the other vector.
+    #[napi]
+    pub fn lerp(&self, other: &Vector3, t: f64) -> Self {
+        Vector3 {
+            x: self.x + (other.x - self.x) * t,
+            y: self.y + (other.y - self.y) * t,
+            z: self.z + (other.z - self.z) * t,
+        }
+    }
+
+    /// Returns a vector with all components negated.
+    #[napi]
+    pub fn negate(&self) -> Self {
+        Vector3 {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+
+    /// Adds another vector to this vector and returns the result.
+    #[napi]
+    pub fn add(&self, other: &Vector3) -> Self {
+        Vector3 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
+    }
+
+    /// Subtracts another vector from this vector and returns the result.
+    #[napi]
+    pub fn sub(&self, other: &Vector3) -> Self {
+        Vector3 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+        }
+    }
+
+    /// Multiplies this vector by a scalar and returns the result.
+    #[napi]
+    pub fn mul(&self, scalar: f64) -> Self {
+        Vector3 {
+            x: self.x * scalar,
+            y: self.y * scalar,
+            z: self.z * scalar,
+        }
+    }
+
+    /// Divides this vector by a scalar and returns the result.
+    #[napi]
+    pub fn div(&self, scalar: f64) -> Self {
+        Vector3 {
+            x: self.x / scalar,
+            y: self.y / scalar,
+            z: self.z / scalar,
+        }
     }
 }
 
@@ -156,6 +367,118 @@ impl Vector4 {
     #[napi(constructor)]
     pub fn new(x: f64, y: f64, z: f64, w: f64) -> Self {
         Vector4 { x, y, z, w }
+    }
+
+    /// Returns the magnitude (length) of this vector.
+    /// Calculate sqrt(x^2 + y^2 + z^2 + w^2)
+    #[napi]
+    pub fn length(&self) -> f64 {
+        ((self.x * self.x) + (self.y * self.y) + (self.z * self.z) + (self.w * self.w)).sqrt()
+    }
+
+    /// Returns a normalized (unit length) version of this vector.
+    /// Returns zero vector if length is zero.
+    #[napi]
+    pub fn normalize(&self) -> Self {
+        let len = self.length();
+        if len == 0.0 {
+            Vector4 {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+                w: 0.0,
+            }
+        } else {
+            Vector4 {
+                x: self.x / len,
+                y: self.y / len,
+                z: self.z / len,
+                w: self.w / len,
+            }
+        }
+    }
+
+    /// Returns the dot product of this vector and another vector.
+    #[napi]
+    pub fn dot(&self, other: &Vector4) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z + self.w * other.w
+    }
+
+    /// Returns the distance to another vector.
+    #[napi]
+    pub fn distance_to(&self, other: &Vector4) -> f64 {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        let dz = self.z - other.z;
+        let dw = self.w - other.w;
+        ((dx * dx) + (dy * dy) + (dz * dz) + (dw * dw)).sqrt()
+    }
+
+    /// Linearly interpolates between this vector and another vector by t.
+    /// t=0 returns this vector, t=1 returns the other vector.
+    #[napi]
+    pub fn lerp(&self, other: &Vector4, t: f64) -> Self {
+        Vector4 {
+            x: self.x + (other.x - self.x) * t,
+            y: self.y + (other.y - self.y) * t,
+            z: self.z + (other.z - self.z) * t,
+            w: self.w + (other.w - self.w) * t,
+        }
+    }
+
+    /// Returns a vector with all components negated.
+    #[napi]
+    pub fn negate(&self) -> Self {
+        Vector4 {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+            w: -self.w,
+        }
+    }
+
+    /// Adds another vector to this vector and returns the result.
+    #[napi]
+    pub fn add(&self, other: &Vector4) -> Self {
+        Vector4 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+            w: self.w + other.w,
+        }
+    }
+
+    /// Subtracts another vector from this vector and returns the result.
+    #[napi]
+    pub fn sub(&self, other: &Vector4) -> Self {
+        Vector4 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+            w: self.w - other.w,
+        }
+    }
+
+    /// Multiplies this vector by a scalar and returns the result.
+    #[napi]
+    pub fn mul(&self, scalar: f64) -> Self {
+        Vector4 {
+            x: self.x * scalar,
+            y: self.y * scalar,
+            z: self.z * scalar,
+            w: self.w * scalar,
+        }
+    }
+
+    /// Divides this vector by a scalar and returns the result.
+    #[napi]
+    pub fn div(&self, scalar: f64) -> Self {
+        Vector4 {
+            x: self.x / scalar,
+            y: self.y / scalar,
+            z: self.z / scalar,
+            w: self.w / scalar,
+        }
     }
 }
 

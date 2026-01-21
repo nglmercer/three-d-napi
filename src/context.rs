@@ -642,7 +642,7 @@ impl DebugMessageLogEntry {
     #[napi]
     pub fn get_info(&self) -> String {
         format!(
-            "DebugMsg(src={}, type={}, id={}, sev={}: {})",
+            "DebugMessage(src={}, type={}, id={}, sev={}: {})",
             self.source, self.message_type, self.message_id, self.severity, self.message
         )
     }
@@ -666,8 +666,8 @@ impl ProgramBinary {
     }
 
     #[napi]
-    pub fn length(&self) -> usize {
-        self.binary.len()
+    pub fn length(&self) -> u32 {
+        self.binary.len() as u32
     }
 
     #[napi]

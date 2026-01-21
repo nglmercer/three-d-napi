@@ -29,14 +29,7 @@
     "src/**/*.ts",
     "examples/**/*.ts",
     "scripts/**/*.ts",
-    "dist/**/*.d.ts",
+    "**/*.d.ts",
   ],
-  "exclude": [
-    "node_modules",
-    "target",
-    "dist",
-    "build",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-  ],
+  "exclude": ["node_modules", "target", "dist", "build", "**/*.spec.ts"],
 }
