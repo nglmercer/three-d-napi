@@ -26,7 +26,7 @@ impl Renderer {
 
     /// Initializes the renderer (placeholder).
     #[napi]
-    pub fn init(&mut self) -> () {
+    pub fn init(&mut self) {
         self.is_initialized = true;
     }
 

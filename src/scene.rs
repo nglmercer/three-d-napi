@@ -94,6 +94,7 @@ pub struct LightSource {
 
 #[napi]
 impl LightSource {
+    #[allow(clippy::too_many_arguments)]
     #[napi(constructor)]
     pub fn new(
         light_type: LightType,
@@ -166,6 +167,7 @@ pub struct Texture2D {
 
 #[napi]
 impl Texture2D {
+    #[allow(clippy::too_many_arguments)]
     #[napi(constructor)]
     pub fn new(
         name: Option<String>,
@@ -216,6 +218,7 @@ pub struct Texture2DArray {
 
 #[napi]
 impl Texture2DArray {
+    #[allow(clippy::too_many_arguments)]
     #[napi(constructor)]
     pub fn new(
         name: Option<String>,
@@ -332,6 +335,7 @@ pub struct Texture3D {
 
 #[napi]
 impl Texture3D {
+    #[allow(clippy::too_many_arguments)]
     #[napi(constructor)]
     pub fn new(
         name: Option<String>,

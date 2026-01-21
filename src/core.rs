@@ -2,7 +2,7 @@
 // but N-API endpoints use flat coordinates for compatibility
 use napi_derive::napi;
 use std::sync::Arc;
-use three_d::{Camera as ThreeDCamera, Deg, Vector3, Viewport as ThreeDViewport};
+use three_d::{Camera as ThreeDCamera, Vector3, Viewport as ThreeDViewport};
 
 // Export buffer module contents
 pub mod buffer;
@@ -45,7 +45,7 @@ pub mod render_states {
         }
 
         #[napi]
-        pub fn default() -> Self {
+        pub fn new_default() -> Self {
             RenderStates {
                 blend: false,
                 blend_src: None,
@@ -249,6 +249,7 @@ pub struct Camera {
 impl Camera {
     /// Creates a new perspective camera.
     /// Note: The `aspect` parameter is calculated internally based on the viewport provided.
+    #[allow(clippy::too_many_arguments)]
     #[napi(constructor)]
     pub fn new(
         position_x: f64,
@@ -281,7 +282,7 @@ impl Camera {
             target_vec,
             up_vec,
             position_vec,
-            Deg(fov_degrees as f32),
+            three_d::Deg(fov_degrees as f32),
             near as f32,
             far as f32,
         );
@@ -387,114 +388,44 @@ impl Viewport {
     }
 }
 
-/// Wrapper for Scene Camera - manages camera position and viewport rendering.
-/// Note: N-API compatibility requires flat fields instead of nested struct parameters.
+/// Core 3D context wrapper.
+/// This provides access to GPU/OpenGL context and state management
+/// for three-d rendering operations.
 #[napi]
-pub struct SceneCamera {
-    /// Camera position x, y, z
-    pub position_x: f64,
-    pub position_y: f64,
-    pub position_z: f64,
-    /// Camera target/look at x, y, z
-    pub target_x: f64,
-    pub target_y: f64,
-    pub target_z: f64,
-    /// Camera up vector x, y, z
-    pub up_x: f64,
-    pub up_y: f64,
-    pub up_z: f64,
-    /// Viewport for camera rendering
-    viewport: Viewport,
-    /// Field of view in degrees
-    #[napi(ts_type = "number")]
-    pub fov_degrees: f64,
-    /// Near clip plane
-    pub near: f64,
-    /// Far clip plane
-    pub far: f64,
-    /// Whether to clear depth buffer before rendering
-    pub clear_depth: bool,
-    /// Whether to clear color buffer before rendering
-    pub clear_color: bool,
-    /// Additional clear attributes
-    pub clear_buffer: bool,
+pub struct Context {
+    width: u32,
+    height: u32,
 }
 
 #[napi]
-impl SceneCamera {
-    /// Creates new SceneCamera with camera parameters (flat coordinates for N-API compatibility).
+impl Context {
+    /// Creates a new core context.
     #[napi(constructor)]
-    pub fn new(
-        position_x: f64,
-        position_y: f64,
-        position_z: f64,
-        target_x: f64,
-        target_y: f64,
-        target_z: f64,
-        up_x: f64,
-        up_y: f64,
-        up_z: f64,
-        viewport: &Viewport,
-        fov_degrees: Option<f64>,
-        near: Option<f64>,
-        far: Option<f64>,
-        clear_depth: Option<bool>,
-        clear_color: Option<bool>,
-    ) -> Self {
-        SceneCamera {
-            position_x,
-            position_y,
-            position_z,
-            target_x,
-            target_y,
-            target_z,
-            up_x,
-            up_y,
-            up_z,
-            viewport: viewport.clone(),
-            fov_degrees: fov_degrees.unwrap_or(45.0),
-            near: near.unwrap_or(0.1),
-            far: far.unwrap_or(1000.0),
-            clear_depth: clear_depth.unwrap_or(true),
-            clear_color: clear_color.unwrap_or(true),
-            clear_buffer: false, // Not implemented
-        }
+    pub fn new(width: u32, height: u32) -> Self {
+        Context { width, height }
     }
 
-    /// Updates camera projection matrix based on new viewport.
+    /// Returns the context size.
     #[napi]
-    pub fn update_viewport(&mut self, viewport: &Viewport) -> () {
-        self.viewport = viewport.clone();
-    }
-    #[napi]
-    pub fn get_position(&self) -> Vec<f64> {
-        vec![self.position_x, self.position_y, self.position_z]
+    pub fn get_size(&self) -> Vec<u32> {
+        vec![self.width, self.height]
     }
 
-    /// Returns camera target as [x, y, z].
-    #[napi]
-    pub fn get_target(&self) -> Vec<f64> {
-        vec![self.target_x, self.target_y, self.target_z]
-    }
-
-    /// Returns camera up vector as [x, y, z].
-    #[napi]
-    pub fn get_up(&self) -> Vec<f64> {
-        vec![self.up_x, self.up_y, self.up_z]
-    }
-
+    /// Returns context info string.
     #[napi]
     pub fn get_info(&self) -> String {
-        format!(
-            "SceneCamera(viewport={}, fov={})",
-            self.viewport.get_info(),
-            self.fov_degrees
-        )
+        format!("CoreContext({}x{})", self.width, self.height)
     }
 }
 
-// Note: Point2, Point3, Vector2, Vector3, Vector4, Matrix2, Matrix3, Matrix4
-// are now defined in prelude.rs with N-API support
+/// Core prelude math types.
+/// These are re-exported from the prelude module for flat, user-friendly access.
+pub mod prelude {
+    pub use crate::prelude::{
+        Matrix2, Matrix3, Matrix4, NDeg as Deg, NQuaternion as Quaternion, NRad as Rad,
+        NSrgba as Srgba, Point2, Point3, Vector2, Vector3, Vector4, NF16 as f16,
+    };
+}
 
 /// Represents an Axis-Aligned Bounding Box (AABB).
 /// Used for culling and collision detection.

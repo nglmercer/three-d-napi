@@ -12,20 +12,23 @@ use napi_derive::napi;
 /// (e.g., passing an existing context from Electron/tauri or implementing a headless backend).
 #[napi]
 pub struct Context {
-    /// Internal handle. In a real implementation, this would hold an Arc<three_d::Context>.
-    /// For this structural setup, we hold a flag to indicate initialization.
     is_valid: bool,
-    /// Cached version info
     version: Option<Version>,
 }
 
-// Context must be Clone to allow holding Arc<Context> in core::Program
+#[napi]
 impl Clone for Context {
     fn clone(&self) -> Self {
         Context {
             is_valid: self.is_valid,
             version: self.version.clone(),
         }
+    }
+}
+
+impl Default for Context {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -704,6 +707,7 @@ impl Version {
     }
 
     #[napi]
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
         if self.is_webgl {
             format!("WebGL {}.{}", self.major, self.minor)
@@ -732,13 +736,7 @@ impl Version {
             (4, 4) => "GLSL 4.40".to_string(),
             (4, 5) => "GLSL 4.50".to_string(),
             (4, 6) => "GLSL 4.60".to_string(),
-            _ => {
-                if self.major >= 4 {
-                    format!("GLSL {}.{}0", self.major, self.minor)
-                } else {
-                    format!("GLSL {}.{}0", self.major, self.minor)
-                }
-            }
+            _ => format!("GLSL {}.{}0", self.major, self.minor),
         }
     }
 

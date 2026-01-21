@@ -40,6 +40,46 @@ pub mod scene;
 /// Manages the rendering loop and screen clearing.
 pub mod renderer;
 
+/// Represents a GUI widget.
+/// Placeholder wrapper for UI element management.
+#[napi]
+pub struct GUI {
+    /// Widget position x
+    pub x: f64,
+    /// Widget position y
+    pub y: f64,
+    /// Widget width
+    pub width: f64,
+    /// Widget height
+    pub height: f64,
+    /// Widget label
+    pub label: Option<String>,
+}
+
+#[napi]
+impl GUI {
+    /// Creates a new GUI widget.
+    #[napi(constructor)]
+    pub fn new(x: f64, y: f64, width: f64, height: f64, label: Option<String>) -> Self {
+        GUI {
+            x,
+            y,
+            width,
+            height,
+            label,
+        }
+    }
+
+    /// Returns the widget info.
+    #[napi]
+    pub fn get_info(&self) -> String {
+        format!(
+            "GUI(x={}, y={}, width={}, height={}, label={:?})",
+            self.x, self.y, self.width, self.height, self.label
+        )
+    }
+}
+
 /// Simple greeting function to verify the module is loaded.
 #[napi]
 pub fn hello_three_d() -> String {
@@ -49,7 +89,7 @@ pub fn hello_three_d() -> String {
 /// Returns version information for the three-d crate and N-API bindings.
 #[napi]
 pub fn get_version() -> String {
-    format!("three-d: 0.18.2, N-API Bindings: 0.1.0")
+    "three-d: 0.18.2, N-API Bindings: 0.1.0".to_string()
 }
 
 /// Re-exports for backward compatibility and to match lib.md documentation structure.
@@ -62,8 +102,16 @@ pub use context::{
     NativeVertexArray, ProgramBinary, Version,
 };
 
-// Core module exports
-pub use core::{Camera, Program, ScissorBox, Viewport};
+// Core module exports (including core::Context, AxisAlignedBoundingBox)
+pub use core::{
+    AxisAlignedBoundingBox, Camera, Context as CoreContext, Program, ScissorBox, Viewport,
+};
+
+// Core::prelude math types (to match lib.md documentation)
+pub use core::prelude::{
+    f16, Deg, Matrix2, Matrix3, Matrix4, Point2, Point3, Quaternion, Rad, Srgba, Vector2, Vector3,
+    Vector4,
+};
 
 // Core::buffer exports
 pub use core::buffer::{ElementBuffer, InstanceBuffer, UniformBuffer, VertexBuffer};
@@ -75,16 +123,6 @@ pub use core::render_states::{RenderStates, WriteMask};
 pub use core::render_target::{
     ClearState, ColorTarget, ColorTargetMultisample, DepthTarget, DepthTargetMultisample,
     RenderTarget, RenderTargetMultisample,
-};
-
-// Core module exports (including AxisAlignedBoundingBox)
-pub use core::AxisAlignedBoundingBox;
-
-// Preule (math) exports
-/// Note: prelude types use N-prefixed names internally to avoid conflicts with three_d
-pub use prelude::{
-    Matrix2, Matrix3, Matrix4, NDeg as Deg, NQuaternion as Quaternion, NRad as Rad,
-    NSrgba as Srgba, Point2, Point3, Vector2, Vector3, Vector4, NF16 as f16,
 };
 
 // Scene exports
