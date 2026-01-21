@@ -1,7 +1,7 @@
 use crate::prelude::{NPoint3, NVector3};
 use napi_derive::napi;
 use std::sync::Arc;
-use three_d::{Camera as ThreeDCamera, Deg, Vector3, Vector4, Viewport};
+use three_d::{Camera as ThreeDCamera, Deg, Vector3, Viewport};
 
 /// Represents a 3D Camera.
 /// Manages the viewing frustum and perspective/orthographic projection.

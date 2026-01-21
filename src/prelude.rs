@@ -1,5 +1,5 @@
 use napi_derive::napi;
-use three_d::{Deg, Matrix4, Point3, Quaternion, SquareMatrix, Vector3};
+use three_d::{Deg, Matrix4, Point3, Quaternion, SquareMatrix, Vector3, Vector4};
 
 /// Represents a 2D Point.
 /// Note: `napi` supports `f64` better than `f32`, so we cast internally.
