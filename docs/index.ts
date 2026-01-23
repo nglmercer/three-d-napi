@@ -17,4 +17,5 @@ const info = `
   # progress ${""} Done
   ${Enums}
   `;
+export { Traits, Enums, structs, fn };
 export default info;
