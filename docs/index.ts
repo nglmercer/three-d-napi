@@ -8,13 +8,13 @@ const info = `
   ### 0.18.2
   - List of all items
 
-  # progress ${""} unknown
+  # progress ${""} Done
   ${structs}
-  # progress ${""} unknown
+  # progress ${""} Done
   ${fn}
-  # progress ${""} unknown
+  # progress ${""} Done
   ${Traits}
-  # progress ${""} unknown
+  # progress ${""} Done
   ${Enums}
   `;
 export default info;

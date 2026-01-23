@@ -578,6 +578,7 @@ pub mod texture {
 
     /// CubeMapSideIterator for iterating cubemap faces.
     #[napi]
+    #[derive(Default)]
     pub struct CubeMapSideIterator {
         current: u32,
     }
@@ -586,11 +587,14 @@ pub mod texture {
     impl CubeMapSideIterator {
         #[napi(constructor)]
         pub fn new() -> Self {
-            CubeMapSideIterator { current: 0 }
+            Self::default()
         }
+    }
 
-        #[napi]
-        pub fn next(&mut self) -> Option<CubeMapSide> {
+    impl Iterator for CubeMapSideIterator {
+        type Item = CubeMapSide;
+
+        fn next(&mut self) -> Option<Self::Item> {
             let side = match self.current {
                 0 => Some(CubeMapSide::Right),
                 1 => Some(CubeMapSide::Left),
@@ -604,6 +608,15 @@ pub mod texture {
                 self.current += 1;
             }
             side
+        }
+    }
+
+    #[napi]
+    impl CubeMapSideIterator {
+        #[napi]
+        #[allow(clippy::should_implement_trait)]
+        pub fn next(&mut self) -> Option<CubeMapSide> {
+            <Self as Iterator>::next(self)
         }
     }
 

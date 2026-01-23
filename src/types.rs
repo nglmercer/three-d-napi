@@ -772,6 +772,13 @@ pub type CoreError = u32;
 // ============================================================================
 
 #[napi]
+impl Default for RenderStateDescriptor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[napi]
 impl RenderStateDescriptor {
     /// Creates a new render state descriptor with default values.
     #[napi(constructor)]
