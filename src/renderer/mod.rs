@@ -13,7 +13,6 @@ pub struct Camera {
     // impl details
 }
 
-
 #[napi]
 impl Camera {
     #[napi(constructor)]

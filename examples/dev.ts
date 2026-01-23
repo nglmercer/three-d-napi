@@ -46,7 +46,12 @@ async function main() {
     // 6. Simulate rendering a frame
     const frameSuccess = renderer.renderFrame();
     console.log({frameSuccess});
-
+    const timeout = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 10000);
+    });
+    await timeout;
   } catch (error) {
     console.error('❌ Error in example:', error);
   }
